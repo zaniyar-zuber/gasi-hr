@@ -75,6 +75,21 @@ p{margin:0}
 .st-title p{margin-top:12px;max-width:44ch;color:#e9dcc5;font-size:16.5px;line-height:1.9;text-shadow:0 2px 14px rgba(0,0,0,.8)}
 .st-title.hide{opacity:0;transform:translateY(-10px)}
 .st-hud{position:absolute;z-index:4;left:max(16px,env(safe-area-inset-left,0px));top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;max-width:62%}
+.hctl{display:none}
+.chip .ico{display:none;width:18px;height:18px;fill:none;stroke:var(--brass-hi);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){
+ .top .wrap{gap:10px}
+ .nav{display:none}
+ .brand b{font-size:16px;letter-spacing:.2em}
+ .hctl{display:flex;gap:6px;margin-inline-start:auto}
+ .hctl .chip{width:40px;height:40px;min-width:0;padding:0;justify-content:center;border-radius:12px;background:var(--panel);border-color:var(--line)}
+ .hctl .chip>span{display:none}
+ .hctl .chip .ico,.hctl .chip svg{display:block;width:19px;height:19px}
+ .hctl .chip[aria-pressed="true"]{background:var(--brass-hi);border-color:var(--brass-hi)}
+ .hctl .chip[aria-pressed="true"] svg{stroke:#1a120c}
+ .hctl .chip:active{transform:scale(.92)}
+ .st-hud{display:none!important}
+}
 .tog svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--brass-hi);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tog{min-width:118px;justify-content:center}
 .tog b{font-weight:600;color:var(--brass-hi)}
@@ -280,6 +295,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     <nav class="nav" aria-label="بەشەکان">
       <a href="#stage">سێ ڕەهەندی</a><a href="#plans">نەخشەکان</a>
     </nav>
+    <div class="hctl" id="hctl"></div>
   </div>
 </header>
 
@@ -292,10 +308,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     <p>چێشتخانەیەکی کوردی بۆ ساڵی ٢٠٢٦، کلاسیک و مۆدێرن پێکەوە. لەسەر نەخشەی ٦٫٠٥ × ١٣٫٣٢ مەتری خۆت دروستکراوە و هەموو ستوون و دیوارێکی هەڵگر لە شوێنی خۆیدا ماوەتەوە.</p>
   </div>
   <div class="st-hud">
-    <button class="chip" id="bTour" aria-pressed="false"><span class="dot"></span>گەشتی خۆکار</button>
+    <button class="chip" id="bTour" aria-pressed="false" aria-label="گەشتی خۆکار"><span class="dot"></span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg><span class="tx">گەشتی خۆکار</span></button>
     <button class="chip tog" id="bMood" aria-label="کات: شەو یان ڕۆژ"></button>
     <button class="chip tog" id="bCeil" aria-label="سەقفی سەرەوە: هەیە یان نییە"></button>
-    <button class="chip" id="bLbl" aria-pressed="true">ناونیشانەکان</button>
+    <button class="chip" id="bLbl" aria-pressed="true" aria-label="ناونیشانەکان"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.4"/></svg><span class="tx">ناونیشانەکان</span></button>
     <button class="chip" id="bFs">پڕ بە شاشە</button>
   </div>
   <div class="st-now" id="stNow">دیمەن <span>—</span></div>
@@ -1059,6 +1075,9 @@ let day=0,dayTarget=0;const bMood=document.getElementById('bMood');
 const IC_MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',IC_SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 function setMood(d){dayTarget=d;bMood.innerHTML=(d?IC_SUN:IC_MOON)+'<span>'+(d?'ڕۆژ':'شەو')+'</span>';bMood.setAttribute('aria-pressed',!!d)}
 setMood(0);bMood.onclick=()=>setMood(dayTarget?0:1);
+{const hctl=document.getElementById('hctl'),hud=document.querySelector('.st-hud'),bFsEl=document.getElementById('bFs'),mq=matchMedia('(max-width:640px)');
+ const place=()=>{[bTour,bMood,bCeil,bLbl].forEach(b=>mq.matches?hctl.appendChild(b):hud.insertBefore(b,bFsEl))};
+ mq.addEventListener?mq.addEventListener('change',place):mq.addListener(place);place();}
 function applyMood(k){scene.background.copy(BG_N).lerp(BG_D,k);scene.fog.color.copy(scene.background);hemi.intensity=0.35+k*1.3;sun.intensity=0.5+k*3.2;sun.color.setRGB(1,0.88+k*0.08,0.72+k*0.2);sun.position.copy(V(-3-k*5,9-k*3,4-k*1));bloom.strength=0.42-k*0.2;renderer.toneMappingExposure=0.92-k*0.06;pendLights.forEach(l=>l.intensity=3.6-k*1.4);mats.forEach(m=>m.envMapIntensity=m.userData.env*(1+k*1.6))}
 /* hotspots */
 const HOTS=[
